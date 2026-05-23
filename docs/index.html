@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rental Billing Android Preview</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --card: #ffffff;
+      --muted: #64748b;
+      --text: #0f172a;
+      --primary: #0f766e;
+      --primary-2: #14b8a6;
+      --accent: #eab308;
+      --soft: #f8fafc;
+      --line: #e2e8f0;
+      --danger: #dc2626;
+      --shadow: 0 24px 80px rgba(0,0,0,.35);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(20,184,166,.28), transparent 34%),
+        radial-gradient(circle at 90% 20%, rgba(234,179,8,.18), transparent 28%),
+        linear-gradient(135deg, #020617 0%, #0f172a 60%, #111827 100%);
+      color: #f8fafc;
+    }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 18px 48px; }
+    header { display: flex; gap: 20px; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+    .brand h1 { margin: 0; font-size: clamp(28px, 5vw, 56px); letter-spacing: -0.05em; }
+    .brand p { margin: 8px 0 0; color: #cbd5e1; max-width: 720px; line-height: 1.6; }
+    .repo { color: #ccfbf1; text-decoration: none; border: 1px solid rgba(20,184,166,.45); padding: 10px 14px; border-radius: 999px; white-space: nowrap; background: rgba(15,118,110,.16); }
+    .grid { display: grid; grid-template-columns: 430px 1fr; gap: 28px; align-items: start; }
+    .phone {
+      width: 390px; max-width: 100%; margin: 0 auto; padding: 14px; border-radius: 42px;
+      background: #020617; box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,.12);
+      position: sticky; top: 20px;
+    }
+    .screen { height: 780px; background: var(--soft); border-radius: 30px; overflow: hidden; color: var(--text); position: relative; }
+    .status { height: 32px; display:flex; align-items:center; justify-content:space-between; padding: 0 24px; font-size:12px; color:#334155; background:#fff; }
+    .appbar { height: 58px; display:flex; align-items:center; gap:10px; padding:0 18px; background:#fff; border-bottom:1px solid var(--line); font-weight:700; }
+    .back { border:0; background:transparent; font-size:20px; cursor:pointer; color:#0f172a; }
+    .content { padding: 18px; height: calc(100% - 90px); overflow: auto; }
+    .login { display:flex; height: calc(100% - 32px); align-items:center; justify-content:center; padding: 24px; text-align:center; }
+    .login-card { background:#fff; border-radius:22px; padding:24px; box-shadow:0 12px 40px rgba(15,23,42,.08); width:100%; }
+    .logo { width:72px; height:72px; border-radius:24px; background:linear-gradient(135deg,var(--primary),var(--primary-2)); margin:0 auto 16px; display:grid; place-items:center; color:#fff; font-size:32px; font-weight:900; }
+    h2,h3 { margin:0; letter-spacing:-.03em; }
+    .muted { color: var(--muted); }
+    .field { width:100%; border:1px solid #cbd5e1; border-radius:14px; padding:14px; margin:14px 0; background:#fff; color:#0f172a; }
+    .btn { border:0; border-radius:14px; padding:13px 16px; background:var(--primary); color:white; font-weight:800; cursor:pointer; width:100%; }
+    .btn.secondary { background:#e2e8f0; color:#0f172a; }
+    .btn.small { width:auto; padding:8px 12px; border-radius:10px; font-size:12px; }
+    .linkbtn { border:0; background:transparent; color:var(--primary); font-weight:800; margin-top:12px; cursor:pointer; }
+    .stats { display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:18px; }
+    .stat,.card,.row { background:#fff; border-radius:18px; border:1px solid var(--line); box-shadow:0 8px 24px rgba(15,23,42,.05); }
+    .stat { padding:14px; }
+    .stat span { display:block; color:var(--muted); font-size:12px; }
+    .stat strong { font-size:24px; }
+    .row { padding:14px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; gap:12px; cursor:pointer; }
+    .row .icon { width:42px; height:42px; border-radius:14px; background:#ccfbf1; display:grid; place-items:center; color:var(--primary); font-weight:900; }
+    .row-main { flex:1; }
+    .row-title { font-weight:800; }
+    .row-sub { color:var(--muted); font-size:12px; margin-top:3px; }
+    .pill { padding:6px 9px; border-radius:999px; background:#ecfeff; color:#0f766e; font-size:12px; font-weight:800; }
+    .pill.busy { background:#fef3c7; color:#92400e; }
+    .pill.danger { background:#fee2e2; color:#991b1b; }
+    .fab { position:absolute; right:22px; bottom:22px; border:0; border-radius:999px; background:var(--primary); color:#fff; padding:14px 18px; font-weight:900; box-shadow:0 14px 35px rgba(15,118,110,.35); cursor:pointer; }
+    .amount { font-weight:900; color:#0f766e; }
+    .actions { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; margin-top:16px; }
+    .tabs { display:flex; gap:8px; flex-wrap:wrap; margin: 0 0 18px; }
+    .tab { border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.08); color:#e2e8f0; padding:10px 12px; border-radius:999px; cursor:pointer; font-weight:700; }
+    .tab.active { background:#ccfbf1; color:#134e4a; border-color:#99f6e4; }
+    .side { background:rgba(15,23,42,.72); border:1px solid rgba(255,255,255,.1); border-radius:28px; padding:22px; box-shadow: var(--shadow); }
+    .side h2 { font-size:28px; margin-bottom:10px; }
+    .side p { color:#cbd5e1; line-height:1.65; }
+    .features { display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:12px; margin-top:20px; }
+    .feature { padding:16px; border-radius:18px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.09); }
+    .feature strong { display:block; color:#fff; margin-bottom:5px; }
+    .feature span { color:#cbd5e1; font-size:13px; line-height:1.5; }
+    .toast { position:absolute; left:18px; right:18px; bottom:22px; background:#0f172a; color:#fff; padding:14px; border-radius:16px; display:none; box-shadow:0 16px 42px rgba(0,0,0,.25); }
+    .toast.show { display:block; }
+    @media (max-width: 900px) {
+      header { display:block; }
+      .repo { display:inline-block; margin-top:14px; }
+      .grid { grid-template-columns:1fr; }
+      .phone { position:relative; top:0; }
+      .screen { height:720px; }
+      .features { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <h1>Rental Billing Android</h1>
+        <p>Interactive online preview for the Kotlin + Jetpack Compose rental billing app. Admin can manage devices, members, sessions, reports; members can monitor balance and rental history.</p>
+      </div>
+      <a class="repo" href="https://github.com/arymukti07/rental-billing-android" target="_blank">View GitHub Repo</a>
+    </header>
+
+    <div class="grid">
+      <div class="phone">
+        <div class="screen" id="screen"></div>
+      </div>
+
+      <aside class="side">
+        <div class="tabs">
+          <button class="tab active" onclick="show('login', this)">Login</button>
+          <button class="tab" onclick="show('admin', this)">Admin</button>
+          <button class="tab" onclick="show('devices', this)">Devices</button>
+          <button class="tab" onclick="show('members', this)">Members</button>
+          <button class="tab" onclick="show('sessions', this)">Sessions</button>
+          <button class="tab" onclick="show('member', this)">Member</button>
+          <button class="tab" onclick="show('reports', this)">Reports</button>
+        </div>
+        <h2>What you can preview</h2>
+        <p>This web page mirrors the app screens so the project can be reviewed online from any browser. The real Android source remains in Kotlin/Compose with Room, Hilt, PDF receipt, payment stub, and Firebase sync interface.</p>
+        <div class="features">
+          <div class="feature"><strong>Offline-first database</strong><span>Room entities for members, devices, sessions, and transactions.</span></div>
+          <div class="feature"><strong>Billing engine</strong><span>15-minute rounding, package pricing, overstay penalty, member discount.</span></div>
+          <div class="feature"><strong>Admin workflow</strong><span>Register devices, top-up members, start/stop rentals, view daily report.</span></div>
+          <div class="feature"><strong>Member view</strong><span>Balance, active rental bill, transaction history, and status.</span></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const el = document.getElementById('screen');
+    const status = '<div class="status"><span>9:41</span><span>Rental Billing</span><span>100%</span></div>';
+    const appbar = (title, back = true) => `${status}<div class="appbar">${back ? '<button class="back" onclick="show(\'admin\')">‹</button>' : ''}<span>${title}</span></div>`;
+    function rupiah(n){ return 'Rp ' + n.toLocaleString('id-ID'); }
+    function clickToast(msg){ const t=document.querySelector('.toast'); if(!t)return; t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1600); }
+    const screens = {
+      login: () => `${status}<div class="login"><div class="login-card"><div class="logo">RB</div><h2>Rental Billing</h2><p class="muted">Phone & Tablet Rental — Indonesia</p><input class="field" value="08123"/><button class="btn" onclick="show('member')">Continue as Member</button><button class="linkbtn" onclick="show('admin')">I'm an Admin →</button></div></div>`,
+      admin: () => `${appbar('Admin Dashboard', false)}<div class="content"><div class="stats"><div class="stat"><span>Devices</span><strong>8</strong></div><div class="stat"><span>Members</span><strong>24</strong></div><div class="stat"><span>Active</span><strong>3</strong></div></div>${row('DV','Devices','Manage phone & tablet inventory','Available', 'devices')}${row('MB','Members','Register, top-up, set tier','Top-up', 'members')}${row('SS','Sessions','Start, monitor, close rentals','Live', 'sessions')}${row('RP','Reports','Daily revenue & session metrics','Today', 'reports')}</div>`,
+      devices: () => `${appbar('Devices')}<div class="content">${device('TAB-01','iPad 9th Gen','Tablet',10000,'IN_USE')}${device('TAB-02','Samsung Tab A9','Tablet',8000,'AVAILABLE')}${device('PH-01','iPhone 12','Phone',12000,'AVAILABLE')}${device('PH-02','Redmi Note 13','Phone',7000,'MAINTENANCE')}<button class="fab" onclick="clickToast('Demo: add device dialog')">+ Add</button><div class="toast"></div></div>`,
+      members: () => `${appbar('Members')}<div class="content">${member('Andi Saputra','08123',50000,'VIP')}${member('Maya Putri','08221',22500,'REGULAR')}${member('Rizky','08555',0,'REGULAR')}<button class="fab" onclick="clickToast('Demo: add member dialog')">+ Add</button><div class="toast"></div></div>`,
+      sessions: () => `${appbar('Active Sessions')}<div class="content">${session('TAB-01 — iPad 9th Gen','Andi Saputra','42 min elapsed', rupiah(7500))}${session('PH-01 — iPhone 12','Walk-in','18 min elapsed', rupiah(6000))}${session('TAB-03 — Galaxy Tab S8','Maya Putri','91 min elapsed', rupiah(32500))}<button class="fab" onclick="clickToast('Demo: start session dialog')">+ Start</button><div class="toast"></div></div>`,
+      member: () => `${appbar('Andi Saputra')}<div class="content"><div class="card" style="padding:18px;margin-bottom:16px"><span class="muted">Balance</span><h2>${rupiah(42500)}</h2><span class="pill">VIP Member</span></div><div class="card" style="padding:18px;margin-bottom:16px"><h3>Active Rental</h3><p>TAB-01 — iPad 9th Gen</p><p class="muted">42 min elapsed</p><h3 class="amount">Current bill: ${rupiah(7500)}</h3></div><h3>Recent Transactions</h3>${txn('TOPUP', rupiah(50000),'Admin top-up')}${txn('RENTAL_CHARGE','- '+rupiah(7500),'Session #12')}</div>`,
+      reports: () => `${appbar('Daily Report')}<div class="content"><p class="muted">2026-05-23</p><div class="stats"><div class="stat"><span>Revenue</span><strong style="font-size:16px">${rupiah(96500)}</strong></div><div class="stat"><span>Sessions</span><strong>11</strong></div><div class="stat"><span>Avg dur.</span><strong>54m</strong></div></div><h3>Sessions today</h3>${report('Session #12 · TAB-01','09:10 → 09:52',7500)}${report('Session #11 · TAB-03','08:00 → 09:31',32500)}${report('Session #10 · PH-02','07:20 → 08:00',12000)}</div>`
+    };
+    function row(icon,title,sub,pill,to){ return `<div class="row" onclick="show('${to}')"><div class="icon">${icon}</div><div class="row-main"><div class="row-title">${title}</div><div class="row-sub">${sub}</div></div><span class="pill">${pill}</span></div>`; }
+    function device(code,name,type,rate,status){ return `<div class="row"><div class="row-main"><div class="row-title">${code} — ${name}</div><div class="row-sub">${type} · ${rupiah(rate)}/hour</div></div><span class="pill ${status==='IN_USE'?'busy':status==='MAINTENANCE'?'danger':''}">${status}</span></div>`; }
+    function member(name,phone,balance,tier){ return `<div class="row"><div class="row-main"><div class="row-title">${name}</div><div class="row-sub">${phone} · ${rupiah(balance)} · ${tier}</div></div><button class="btn small" onclick="event.stopPropagation();clickToast('Demo: top-up ${name}')">Top-up</button></div>`; }
+    function session(dev,who,dur,bill){ return `<div class="row"><div class="row-main"><div class="row-title">${dev}</div><div class="row-sub">${who} · ${dur}</div></div><div><div class="amount">${bill}</div><button class="btn small secondary" onclick="clickToast('Demo: stop rental and print PDF receipt')">Stop</button></div></div>`; }
+    function txn(kind,amount,note){ return `<div class="row"><div class="row-main"><div class="row-title">${kind} · ${amount}</div><div class="row-sub">${note}</div></div></div>`; }
+    function report(title,time,amount){ return `<div class="row"><div class="row-main"><div class="row-title">${title}</div><div class="row-sub">${time}</div></div><div class="amount">${rupiah(amount)}</div></div>`; }
+    function show(name, tab){ el.innerHTML = screens[name](); document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active')); if(tab) tab.classList.add('active'); else { const labels = {login:'Login', admin:'Admin', devices:'Devices', members:'Members', sessions:'Sessions', member:'Member', reports:'Reports'}; [...document.querySelectorAll('.tab')].find(b=>b.textContent===labels[name])?.classList.add('active'); } }
+    show('login');
+  </script>
+</body>
+</html>
